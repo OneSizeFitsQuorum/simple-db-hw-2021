@@ -1,13 +1,8 @@
 package simpledb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import junit.framework.JUnit4TestAdapter;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import simpledb.common.Utility;
 import simpledb.execution.Filter;
 import simpledb.execution.OpIterator;
@@ -15,6 +10,10 @@ import simpledb.execution.Predicate;
 import simpledb.storage.Tuple;
 import simpledb.storage.TupleDesc;
 import simpledb.systemtest.SimpleDbTestBase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class FilterTest extends SimpleDbTestBase {
 
@@ -24,14 +23,16 @@ public class FilterTest extends SimpleDbTestBase {
   /**
    * Initialize each unit test
    */
-  @Before public void setUp() {
+  @Before
+  public void setUp() {
     this.scan = new TestUtil.MockScan(-5, 5, testWidth);
   }
 
   /**
    * Unit test for Filter.getTupleDesc()
    */
-  @Test public void getTupleDesc() {
+  @Test
+  public void getTupleDesc() {
     Predicate pred = new Predicate(0, Predicate.Op.EQUALS, TestUtil.getField(0));
     Filter op = new Filter(pred, scan);
     TupleDesc expected = Utility.getTupleDesc(testWidth);
@@ -42,7 +43,8 @@ public class FilterTest extends SimpleDbTestBase {
   /**
    * Unit test for Filter.rewind()
    */
-  @Test public void rewind() throws Exception {
+  @Test
+  public void rewind() throws Exception {
     Predicate pred = new Predicate(0, Predicate.Op.EQUALS, TestUtil.getField(0));
     Filter op = new Filter(pred, scan);
     op.open();
@@ -58,10 +60,10 @@ public class FilterTest extends SimpleDbTestBase {
   }
 
   /**
-   * Unit test for Filter.getNext() using a &lt; predicate that filters
-   *   some tuples
+   * Unit test for Filter.getNext() using a &lt; predicate that filters some tuples
    */
-  @Test public void filterSomeLessThan() throws Exception {
+  @Test
+  public void filterSomeLessThan() throws Exception {
     Predicate pred;
     pred = new Predicate(0, Predicate.Op.LESS_THAN, TestUtil.getField(2));
     Filter op = new Filter(pred, scan);
@@ -72,10 +74,10 @@ public class FilterTest extends SimpleDbTestBase {
   }
 
   /**
-   * Unit test for Filter.getNext() using a &lt; predicate that filters
-   * everything
+   * Unit test for Filter.getNext() using a &lt; predicate that filters everything
    */
-  @Test public void filterAllLessThan() throws Exception {
+  @Test
+  public void filterAllLessThan() throws Exception {
     Predicate pred;
     pred = new Predicate(0, Predicate.Op.LESS_THAN, TestUtil.getField(-5));
     Filter op = new Filter(pred, scan);
@@ -87,7 +89,8 @@ public class FilterTest extends SimpleDbTestBase {
   /**
    * Unit test for Filter.getNext() using an = predicate
    */
-  @Test public void filterEqual() throws Exception {
+  @Test
+  public void filterEqual() throws Exception {
     Predicate pred;
     this.scan = new TestUtil.MockScan(-5, 5, testWidth);
     pred = new Predicate(0, Predicate.Op.EQUALS, TestUtil.getField(-5));
@@ -117,7 +120,8 @@ public class FilterTest extends SimpleDbTestBase {
   /**
    * Unit test for Filter.getNext() using an = predicate passing no tuples
    */
-  @Test public void filterEqualNoTuples() throws Exception {
+  @Test
+  public void filterEqualNoTuples() throws Exception {
     Predicate pred;
     pred = new Predicate(0, Predicate.Op.EQUALS, TestUtil.getField(5));
     Filter op = new Filter(pred, scan);
