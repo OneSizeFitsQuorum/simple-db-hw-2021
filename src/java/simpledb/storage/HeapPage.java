@@ -12,6 +12,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.IntStream;
 
 /**
  * Each instance of HeapPage stores data for one page of HeapFiles and implements the Page interface
@@ -22,11 +23,13 @@ import java.util.NoSuchElementException;
  */
 public class HeapPage implements Page {
 
-  final HeapPageId pid;
-  final TupleDesc td;
-  final byte[] header;
-  final Tuple[] tuples;
-  final int numSlots;
+  private final HeapPageId pid;
+  private final TupleDesc td;
+  private final byte[] header;
+  private final Tuple[] tuples;
+  private final int numSlots;
+
+  private static final int BITS_FOR_ONE_BYTE = 8;
 
   byte[] oldData;
   private final Byte oldDataLock = (byte) 0;
@@ -55,16 +58,16 @@ public class HeapPage implements Page {
 
     // allocate and read the header slots of this page
     header = new byte[getHeaderSize()];
-      for (int i = 0; i < header.length; i++) {
-          header[i] = dis.readByte();
-      }
+    for (int i = 0; i < header.length; i++) {
+      header[i] = dis.readByte();
+    }
 
     tuples = new Tuple[numSlots];
     try {
       // allocate and read the actual records of this page
-        for (int i = 0; i < tuples.length; i++) {
-            tuples[i] = readNextTuple(dis, i);
-        }
+      for (int i = 0; i < tuples.length; i++) {
+        tuples[i] = readNextTuple(dis, i);
+      }
     } catch (NoSuchElementException e) {
       e.printStackTrace();
     }
@@ -79,9 +82,8 @@ public class HeapPage implements Page {
    * @return the number of tuples on this page
    */
   private int getNumTuples() {
-    // some code goes here
-    return 0;
-
+    return BufferPool.getPageSize() * BITS_FOR_ONE_BYTE / (this.td.getSize() * BITS_FOR_ONE_BYTE
+        + 1);
   }
 
   /**
@@ -92,10 +94,7 @@ public class HeapPage implements Page {
    * tupleSize bytes
    */
   private int getHeaderSize() {
-
-    // some code goes here
-    return 0;
-
+    return (numSlots + BITS_FOR_ONE_BYTE - 1) / BITS_FOR_ONE_BYTE;
   }
 
   /**
@@ -126,8 +125,7 @@ public class HeapPage implements Page {
    * @return the PageId associated with this page.
    */
   public HeapPageId getId() {
-    // some code goes here
-    throw new UnsupportedOperationException("implement this");
+    return pid;
   }
 
   /**
@@ -137,7 +135,8 @@ public class HeapPage implements Page {
     // if associated bit is not set, read forward to the next tuple, and
     // return null.
     if (!isSlotUsed(slotId)) {
-      for (int i = 0; i < td.getSize(); i++) {
+      int size = td.getSize();
+      for (int i = 0; i < size; i++) {
         try {
           dis.readByte();
         } catch (IOException e) {
@@ -194,7 +193,8 @@ public class HeapPage implements Page {
 
       // empty slot
       if (!isSlotUsed(i)) {
-        for (int j = 0; j < td.getSize(); j++) {
+        int size = td.getSize();
+        for (int j = 0; j < size; j++) {
           try {
             dos.writeByte(0);
           } catch (IOException e) {
@@ -210,7 +210,6 @@ public class HeapPage implements Page {
         Field f = tuples[i].getField(j);
         try {
           f.serialize(dos);
-
         } catch (IOException e) {
           e.printStackTrace();
         }
@@ -294,16 +293,14 @@ public class HeapPage implements Page {
    * Returns the number of empty slots on this page.
    */
   public int getNumEmptySlots() {
-    // some code goes here
-    return 0;
+    return IntStream.range(0, numSlots).map(x -> !isSlotUsed(x) ? 1 : 0).parallel().sum();
   }
 
   /**
    * Returns true if associated slot on this page is filled.
    */
   public boolean isSlotUsed(int i) {
-    // some code goes here
-    return false;
+    return ((header[i / 8] >> (i % 8)) & 0x1) == 1;
   }
 
   /**
@@ -320,8 +317,29 @@ public class HeapPage implements Page {
    * slots!)
    */
   public Iterator<Tuple> iterator() {
-    // some code goes here
-    return null;
+    return new Itr();
+  }
+
+  private class Itr implements Iterator<Tuple> {
+
+    private int cursor;
+
+    Itr() {
+    }
+
+    public boolean hasNext() {
+      if (cursor < numSlots && isSlotUsed(cursor)) {
+        return true;
+      }
+      while (++cursor < numSlots && !isSlotUsed(cursor)) {
+      }
+      return cursor < numSlots;
+    }
+
+
+    public Tuple next() {
+      return tuples[cursor++];
+    }
   }
 
 }

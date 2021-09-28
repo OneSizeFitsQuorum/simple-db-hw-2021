@@ -1,7 +1,13 @@
 package simpledb.storage;
 
+import simpledb.storage.TupleDesc.TDItem;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Tuple maintains information about the contents of a tuple. Tuples have a specified schema
@@ -11,6 +17,10 @@ public class Tuple implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private final Field[] values;
+  private TupleDesc td;
+  private RecordId recordId;
+
   /**
    * Create a new tuple with the specified schema (type).
    *
@@ -18,23 +28,22 @@ public class Tuple implements Serializable {
    *           field.
    */
   public Tuple(TupleDesc td) {
-    // some code goes here
+    this.td = td;
+    this.values = new Field[td.numFields()];
   }
 
   /**
    * @return The TupleDesc representing the schema of this tuple.
    */
   public TupleDesc getTupleDesc() {
-    // some code goes here
-    return null;
+    return td;
   }
 
   /**
    * @return The RecordId representing the location of this tuple on disk. May be null.
    */
   public RecordId getRecordId() {
-    // some code goes here
-    return null;
+    return recordId;
   }
 
   /**
@@ -43,7 +52,7 @@ public class Tuple implements Serializable {
    * @param rid the new RecordId for this tuple.
    */
   public void setRecordId(RecordId rid) {
-    // some code goes here
+    this.recordId = rid;
   }
 
   /**
@@ -53,7 +62,7 @@ public class Tuple implements Serializable {
    * @param f new value for the field.
    */
   public void setField(int i, Field f) {
-    // some code goes here
+    values[i] = f;
   }
 
   /**
@@ -61,8 +70,7 @@ public class Tuple implements Serializable {
    * @return the value of the ith field, or null if it has not been set.
    */
   public Field getField(int i) {
-    // some code goes here
-    return null;
+    return values[i];
   }
 
   /**
@@ -74,22 +82,20 @@ public class Tuple implements Serializable {
    * where \t is any whitespace (except a newline)
    */
   public String toString() {
-    // some code goes here
-    throw new UnsupportedOperationException("Implement this");
+    return Arrays.stream(values).map(Field::toString).collect(Collectors.joining("\t"));
   }
 
   /**
    * @return An iterator which iterates over all the fields of this tuple
    */
   public Iterator<Field> fields() {
-    // some code goes here
-    return null;
+    return new ArrayList<>(Arrays.asList(values)).iterator();
   }
 
   /**
    * reset the TupleDesc of this tuple (only affecting the TupleDesc)
    */
   public void resetTupleDesc(TupleDesc td) {
-    // some code goes here
+    this.td = td;
   }
 }
