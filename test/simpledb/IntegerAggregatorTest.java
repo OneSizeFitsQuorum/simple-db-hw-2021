@@ -92,7 +92,7 @@ public class IntegerAggregatorTest extends SimpleDbTestBase {
     OpIterator it;
     for (int[] step : min) {
       agg.mergeTupleIntoGroup(scan1.next());
-      it = agg.iterator();
+      it = agg.iter1ator();
       it.open();
       TestUtil.matchAllTuples(TestUtil.createTupleList(width1, step), it);
     }
